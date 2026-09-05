@@ -1,0 +1,61 @@
+name: Sync Oreo Flavors
+
+on:
+  # Allows you to manually run it
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout tasting repository
+        uses: actions/checkout@v6
+
+      - name: Download master flavor list
+        run: |
+          curl -L \
+            https://raw.githubusercontent.com/bertcafecito/oreo-flavors/main/flavors.md \
+            -o flavors.md
+
+      - name: Create Pull Request
+        id: create-pr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: sync/oreo-flavors
+          delete-branch: true
+
+          commit-message: "Sync Oreo flavor catalog"
+
+          title: "Sync Oreo flavor catalog"
+
+          body: |
+            ## 🍪 Oreo Flavor Catalog Update
+
+            This pull request was automatically generated
+            from the latest version of:
+
+            `bertcafecito/oreo-flavors`
+
+            ### Source
+
+            https://github.com/bertcafecito/oreo-flavors
+
+            ### What changed?
+
+            The `flavors.md` catalog has been synchronized
+            with the community master list.
+
+            This PR should be reviewed before merging.
+
+          add-paths: |
+            flavors.md
+
+      - name: Show Pull Request
+        if: steps.create-pr.outputs.pull-request-number
+        run: |
+          echo "Pull Request: ${{ steps.create-pr.outputs.pull-request-url }}"
